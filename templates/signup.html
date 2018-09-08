@@ -1,0 +1,11 @@
+<form action="/users" method = "POST">
+	<input name="username">
+	<input name="password">
+	<!-- <input name2="password"> -->
+	<input type="submit" value="Submit">
+	
+</form>
+
+{% if username %}
+You said : {{ username }}
+{%endif%}
