@@ -53,11 +53,7 @@ def duplicate_name(name):
     return "<h1>409</h1><p>A forum already exists with the name " + name + ".</p>", 409
 
 # @app.errorhandler(404)
-# def thread_404(forum_id):
-    # return make_response(jsonify({'error': 'No forum exists with the forum id of ' + str(forum_id)}))
-    
-# @app.errorhandler(404)
-# def page_not_found(e, forum_id):
+# def thread_404(e, forum_id):
     # return "<h1>404</h1><p>No forum exists with the forum id of " + str(forum_id) + ".</p>", 404
 
 @app.route('/forums/<int:forum_id>', methods=['GET'])
@@ -66,13 +62,13 @@ def get_threads(forum_id):
     conn = sqlite3.connect('discussionform.db')
     conn.row_factory = dict_factory
     cur = conn.cursor()
-    # Select from forums on forum id to make sure that 
+    # Select from forums on forum id to make sure that the forum exists
+    # If forum exists, then select from threads where forum_id is equal to forum_id from api call
     query = 'SELECT * FROM threads WHERE forum_id = ' + str(forum_id) + ' ORDER BY timestamp DESC'
     threads = cur.execute(query).fetchall()
     print(len(threads))
     if len(threads) == 0:
         return "<h1>404</h1><p>No forum exists with the forum id of " + str(forum_id) + ".</p>", 404
     return jsonify(threads)
-
 
 app.run()
