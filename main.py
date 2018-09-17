@@ -1,5 +1,5 @@
 import flask
-from flask import request, jsonify, make_response, abort
+from flask import request, jsonify, make_response, abort, Response
 from flask_basicauth import BasicAuth
 import sqlite3
 
@@ -17,36 +17,50 @@ def dict_factory(cursor, row):
         d[col[0]] = row[idx]
     return d
 
-@app.route('/forums', methods=['GET'])
-def get_forums():
+#Function to query database
+#Fetch each data one by one based on the query provided
+def query_db(query, args=(), one=False):
+    print(query)
     conn = sqlite3.connect('discussionform.db')
     conn.row_factory = dict_factory
     cur = conn.cursor()
-    all_forums = cur.execute('SELECT * FROM forums;').fetchall()
+    fetch = cur.execute(query)
+    return fetch
+    # return (fetch[0] if fetch else None) if one else fetch
 
-    return jsonify(all_forums)
+#Function connecting to database
+def get_db():
+    conn = sqlite3.connect('discussionform.db')
+    conn.row_factory = dict_factory
+    return conn
+
+@app.route('/forums', methods=['GET'])
+def get_forums():
+    query = 'SELECT * FROM forums'
+    forums = query_db(query)
+    return jsonify(forums)
 
 @app.route('/forums', methods=['POST'])
-@basic_auth.required
+# @basic_auth.required
 def post_forums():
 
     name = request.values['name']
     creator = 'holly'
     print(name)
-    conn = sqlite3.connect('discussionform.db')
-    conn.row_factory = lambda cursor, row: row[0]
-    cur = conn.cursor()
-    forum_names = cur.execute('SELECT name from forums').fetchall()
-
-    for forum_name in forum_names:
-       if forum_name == name:
-           return duplicate_name(name)
-    
-
-    cur.execute('insert into forums (name, creator) values (?, ?)',(name, creator))
-    conn.commit()
+    query = 'SELECT name FROM forums'
+    forum_names = query_db(query)
     print(forum_names)
-    return ','.join(forum_names)
+    for forum_name in forum_names:
+        # print(forum_name)
+        # print(forum_name['name'])
+        if forum_name['name'] == name:
+           return duplicate_name(name)
+   
+    db = get_db()
+    db.execute('insert into forums (name, creator) values (?, ?)',(name, creator))
+    db.commit()
+
+    return jsonify(forum_names)
     
 @app.errorhandler(409)
 def duplicate_name(name):
@@ -63,12 +77,13 @@ def get_threads(forum_id):
     conn.row_factory = dict_factory
     cur = conn.cursor()
     # Select from forums on forum id to make sure that the forum exists
+    query = 'SELECT * FROM forums WHERE id = ' + str(forum_id)
+    forum = cur.execute(query).fetchall()
+    if len(forum) == 0:
+        return  "<h1>404</h1><p>No forum exists with the forum id of " + str(forum_id) + ".</p>", 404
     # If forum exists, then select from threads where forum_id is equal to forum_id from api call
     query = 'SELECT * FROM threads WHERE forum_id = ' + str(forum_id) + ' ORDER BY timestamp DESC'
     threads = cur.execute(query).fetchall()
-    print(len(threads))
-    if len(threads) == 0:
-        return "<h1>404</h1><p>No forum exists with the forum id of " + str(forum_id) + ".</p>", 404
     return jsonify(threads)
 
 app.run()
