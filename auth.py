@@ -2,6 +2,7 @@ import flask
 from flask import request, jsonify, render_template, json, abort, Response, flash, g
 from flask_basicauth import BasicAuth
 from flask.cli import AppGroup
+# from flask_httpauth import HTTPTokenAuth
 import click
 import sqlite3
 
@@ -63,8 +64,8 @@ def notify_error(status_code, response, reason):
     
 #Get information based on username    
 def get_credentials(username):
-    user_name = query_db('SELECT username FROM USER WHERE user.username =?', [username], one=True)
-    password = query_db('SELECT password FROM USER WHERE user.username =?', [username], one=True)
+    user_name = query_db('''SELECT username FROM USER WHERE username =?''', [username], one=True)
+    password = query_db('''SELECT password FROM USER WHERE username =?''', [username], one=True)
     app.config['BASIC_AUTH_USERNAME'] = user_name[0]
     app.config['BASIC_AUTH_PASSWORD'] = password[0]
     print(user_name)
@@ -89,32 +90,17 @@ def register():
       else:
           return render_template('signup.html')
 
-        
-#Check user
-@app.route('/users/<string:username>', methods=['GET'])
-def userInfo(username):
-    
-        # data = request.get_json()
-    get_credentials(username)
-    
-    if not basic_auth.check_credentials('username', 'password'):
-        return notify_error(401, 'Unauthorized', 'Need correct')
-    if request.method == 'GET':
-        user = query_db('select * from user where username =?', [username])
-        user = map(dict, user)
-        return jsonify(user)
-    return make_error(405, 'Method not allowed', 'not allow for this url')
 
-# A route to return all the available entries in our catalog
-# @app.route('/forums', methods = ['POST','GET'])
-# def api_forums():
-#     all_forums = query_db('SELECT * FROM forums;')
-#     return jsonify(all_forums)
-  #   else:
-  #       db = get_db()
-  #       db.execute('''insert into forums (name, creator) values (?, ?)''',  [data['name'], data['creator']])
-  #       db.commit()
-  
+@app.route('/forums', methods = ['GET'])
+def api_forums():
+    all_forums = query_db('SELECT * FROM forums;')
+    return jsonify(all_forums)
+
+@app.route('/forums/<int:forum_id>', methods = ['GET'])
+def api_threads(forum_id):
+    all_threads = query_db("SELECT * FROM threads where forum_id= ?;", [forum_id])
+    return jsonify(all_threads)
+
 # @app.route('/forums', methods=['POST'])
 # @basic_auth.required
 # def forums():
