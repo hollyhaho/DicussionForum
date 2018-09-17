@@ -1,5 +1,5 @@
 import flask
-from flask import request, jsonify, render_template, json, abort, Response, flash, g
+from flask import request, jsonify, render_template, json, abort, Response, flash, g, make_response
 from flask_basicauth import BasicAuth
 from flask.cli import AppGroup
 # from flask_httpauth import HTTPTokenAuth
@@ -93,8 +93,14 @@ def register():
 
 @app.route('/forums', methods = ['GET'])
 def api_forums():
-    all_forums = query_db('SELECT * FROM forums;')
-    return jsonify(all_forums)
+    reqjson =[]
+    all_forums = query_db('SELECT forums.id, forums.forum_name, user.username FROM  forums INNER JOIN user ON forums.Id = user.Id ;')
+    for forum in all_forums:
+        reqjson.append({'id': forum[0], 'title': forum[1], 'creator': forum[2]})
+    responseJSON = jsonify(reqjson)
+    response = make_response(responseJSON)
+    response.status_code = 200
+    return response
 
 @app.route('/forums/<int:forum_id>', methods = ['GET'])
 def api_threads(forum_id):
