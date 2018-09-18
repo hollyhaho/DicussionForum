@@ -1,3 +1,8 @@
+DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS forums;
+DROP TABLE IF EXISTS threads;
+DROP TABLE IF EXISTS posts;
+
 CREATE TABLE  IF NOT EXISTS user(
 	Id INTEGER PRIMARY KEY ASC, 
 	username TEXT, 
@@ -5,23 +10,34 @@ CREATE TABLE  IF NOT EXISTS user(
 );
 
 CREATE TABLE IF NOT EXISTS forums(
-	id INTEGER PRIMARY KEY ASC, 
+	Id INTEGER PRIMARY KEY ASC, 
 	forum_name TEXT, 
 	forum_creator INTEGER,
-	forum_time DATETIME,
-	FOREIGN KEY (forum_creator) REFERENCES user(id)
+	forum_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (forum_creator) REFERENCES user(Id)
 );
 
 CREATE TABLE IF NOT EXISTS threads(
-	thread_id INTEGER PRIMARY KEY ASC,
+	Id INTEGER PRIMARY KEY ASC,
 	thread_title TEXT NOT NULL,
 	thread_creator INTEGER NOT NULL,
-	thread_time TEXT,
-	forum_id INTEGER,
-	FOREIGN KEY (forum_id) REFERENCES forums(id),
-	FOREIGN KEY (thread_creator) REFERENCES user(id)
+	thread_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+	forum_Id INTEGER,
+	FOREIGN KEY (forum_Id) REFERENCES forums(Id),
+	FOREIGN KEY (thread_creator) REFERENCES user(Id)
 );
 
+CREATE TABLE IF NOT EXISTS posts(
+	post_Id INTEGER PRIMARY KEY ASC,
+	post_text TEXT NOT NULL,
+	post_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+	post_authorid INTEGER,
+	post_forumid INTEGER,
+	post_threadId INTEGER,
+	FOREIGN KEY (post_authorId) REFERENCES user(Id)
+	FOREIGN KEY (post_forumId) REFERENCES forum(Id)
+	FOREIGN KEY (post_threadId) REFERENCES threads(Id)
+);
 
 
 INSERT INTO USER VALUES (1, "hoangphuc", "love" );
@@ -29,4 +45,4 @@ INSERT INTO FORUMS VALUES (1, "Testing", 1, "2017-09-16 15:33:33.12343" );
 INSERT INTO THREADS VALUES (1,"Whydo?", 1, "2017-09-14 15:33:33.123433",1);
 INSERT INTO USER VALUES (2, "holly", "ha" );
 INSERT INTO FORUMS VALUES (2, "Testing222", 2, "2017-09-16 15:33:33.12343" );
-INSERT INTO THREADS VALUES (2,"Whydo22?", 2, "2017-09-14 15:33:33.123433",2);
+INSERT INTO THREADS VALUES (2,"Whydo22?", 2, "2017-09-15 15:33:33.123433",1);
