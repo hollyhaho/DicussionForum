@@ -1,16 +1,30 @@
 import flask
-from flask import request, jsonify, make_response, abort, Response, g
+from flask import request, jsonify, make_response, abort, Response, g, current_app
 from flask_basicauth import BasicAuth
 import sqlite3
 
 app = flask.Flask(__name__)
 app.config['DEBUG'] = True
 
-app.config['BASIC_AUTH_USERNAME'] = 'username'
-app.config['BASIC_AUTH_PASSWORD'] = 'password'
+class Authentication(BasicAuth):
+    def check_credentials(self, username, password):
+        print('check_credentials')
+        # query from database 
+        query = "SELECT * from user where username ='{}'".format(username)
+        user = query_db(query)
+        if user == []:
+            return False
+        if user[0]['password'] == password:
+            current_app.config['BASIC_AUTH_USERNAME'] = username
+            current_app.config['BASIC_AUTH_PASSWORD'] = password
+            return True
+        else: 
+            return False
+       
 
-basic_auth = BasicAuth(app)
+basic_auth = Authentication(app)
 DATABASE = './discussionforum.db'
+
 
 def init_db():
     with app.app_context():
@@ -46,11 +60,10 @@ def get_forums():
     return jsonify(forums)
 
 @app.route('/forums', methods=['POST'])
-# @basic_auth.required
+@basic_auth.required
 def post_forums():
-
     name = request.values['forum_name']
-    creator = 'holly'
+    creator = current_app.config['BASIC_AUTH_USERNAME']
     print(name)
     query = 'SELECT forum_name FROM forums'
     forum_names = query_db(query)
