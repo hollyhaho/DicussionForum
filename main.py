@@ -127,10 +127,10 @@ def post_thread(forum_id):
     file_entry = query_db('SELECT last_insert_rowid()')
     thread_id = file_entry[0]['last_insert_rowid()']
     # Insert text as a new post
-    db.execute('insert into posts (post_text, post_authorid , post_threadId) values (?, ?, ?)',(text, creator, str(thread_id)))
+    db.execute('insert into posts (post_text, post_authorid , post_threadId, post_forumid) values (?, ?, ?, ?)',(text, creator, str(thread_id), str(forum_id)))
     db.commit()
 
-    response = make_response("SUCCESS: THREAD CREATED")
+    response = make_response("Success: Thread and Post created")
     response.headers['location'] = '/forums/{}/{}'.format(str(forum_id), thread_id)
     response.status_code = 201
     return response
@@ -138,8 +138,58 @@ def post_thread(forum_id):
 @app.route('/forums/<int:forum_id>/<int:thread_id>', methods=['GET'])
 def get_post(forum_id, thread_id):
     print(forum_id, thread_id)
-    response = {'forum_id': forum_id, 'thread_id': thread_id}
-    return jsonify(response)
+     # Select from forums on forum id to make sure that the forum exists
+    query = 'SELECT * FROM forums WHERE id = ' + str(forum_id)
+    forum = query_db(query)
+    print(forum)
+    if len(forum) == 0:
+        error = '404 No forum exists with the forum id of ' + str(forum_id)
+        return make_response(jsonify({'error': error}), 404)
+    # Select from threads on thread_id to make sure thread exists
+    query = 'SELECT * FROM threads WHERE id = ' + str(thread_id)
+    thread = query_db(query)
+    print(thread)
+    if len(thread) == 0:
+        error = '404 No thread exists with the thread id of ' + str(thread_id)
+        return make_response(jsonify({'error': error}), 404)
+    query = "SELECT * FROM posts WHERE post_threadId = {} AND post_forumid = {}".format(str(thread_id), str(forum_id))
+    post = query_db(query)
+    return jsonify(post)
+
+@app.route('/forums/<int:forum_id>/<int:thread_id>', methods=['POST'])
+@basic_auth.required
+def post_post(forum_id, thread_id):
+    # Select from forums on forum id to make sure that the forum exists
+    query = 'SELECT * FROM forums WHERE id = ' + str(forum_id)
+    forum = query_db(query)
+    print(forum)
+    if len(forum) == 0:
+        error = '404 No forum exists with the forum id of ' + str(forum_id)
+        return make_response(jsonify({'error': error}), 404)
+    # Select from threads on thread_id to make sure thread exists
+    query = 'SELECT * FROM threads WHERE id = ' + str(thread_id)
+    thread = query_db(query)
+    print(thread)
+    if len(thread) == 0:
+        error = '404 No thread exists with the thread id of ' + str(thread_id)
+        return make_response(jsonify({'error': error}), 404)
+    
+    data = request.get_json(force=True)
+    creator = current_app.config['BASIC_AUTH_USERNAME']
+    text = data['text']
+
+    # Insert text as a new post
+    db = get_db()
+    db.execute('insert into posts (post_text, post_authorid , post_threadId, post_forumid) values (?, ?, ?, ?)',(text, creator, str(thread_id), str(forum_id)))
+    db.commit()
+
+    response = make_response("Success: Post created")
+    response.headers['location'] = '/forums/{}/{}'.format(str(forum_id), thread_id)
+    response.status_code = 201
+    return response
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
