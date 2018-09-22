@@ -1,5 +1,5 @@
 import flask
-from flask import request, jsonify, render_template, json, abort, Response, flash, g, make_response
+from flask import request, jsonify, render_template, json, abort, Response, flash, g, current_app, make_response
 from flask_basicauth import BasicAuth
 from flask.cli import AppGroup
 import click
@@ -8,11 +8,23 @@ import sqlite3
 app = flask.Flask(__name__)
 app.config['DEBUG'] = True
 
-app.config['BASIC_AUTH_USERNAME'] = 'hoa'
-app.config['BASIC_AUTH_PASSWORD'] = 'a'
+class Authentication(BasicAuth):
+    def check_credentials(self, username, password):
+        print('check_credentials')
+        # query from database 
+        query = "SELECT * from users where username ='{}'".format(username)
+        user = query_db(query)
+        if user == []:
+            return False
+        if user[0]['password'] == password:
+            current_app.config['BASIC_AUTH_USERNAME'] = username
+            current_app.config['BASIC_AUTH_PASSWORD'] = password
+            return True
+        else: 
+            return False
+       
 
-basic_auth = BasicAuth(app)
-
+basic_auth = Authentication(app)
 DATABASE = './init.db'
 
 #Function Connect Database
@@ -68,40 +80,57 @@ def notify_error(status_code, response, reason):
     "reason": reason
     })
     return notify
-    
-#Get information based on username    
-def get_credentials(username):
-    user_name = query_db('''SELECT username FROM USER WHERE username =?''', [username], one=True)
-    password = query_db('''SELECT password FROM USER WHERE username =?''', [username], one=True)
-    app.config['BASIC_AUTH_USERNAME'] = user_name[0]
-    app.config['BASIC_AUTH_PASSWORD'] = password[0]
-    print(user_name)
-    print(password)     
-         
-#Create User
-@app.route('/users', methods=['GET','POST'])
-def register(): 
-      if request.method == 'POST':
-          if not request.form['username'] or not request.form['password']:
-              return notify_error(400,'Bad Request','Username or password is not entered')
           
-          #check duplicated username
-          cur = query_db('select ID from user where username=?', [request.form['username']], one=True)
-          if cur is not None:
-              return notify_error(409, 'Conflict', 'Username already exists')
-          else: 
-              db = get_db()
-              db.execute('insert into user(username, password) values (?,?)', [request.form['username'], request.form['password']])
-              db.commit()
-              return render_template('signup.html', username=request.form['username'], password=request.form['password'])
-      else:
-          return render_template('signup.html')
+#Create User
+@app.route('/users', methods=['POST'])
+def create_user():
+    data = request.get_json(force=True)
+    username = data['username']
+    password = data['password']
+
+
+    query = 'SELECT username FROM users'
+    listusername = query_db(query)
+    for user_name in listusername:
+        if user_name['username'] == username:
+            return notify_error(409, 'Conflict', 'Username already exists')
+
+    db = get_db()
+    db.execute('insert into users(username, password) values (?,?)', (username,password))
+    db.commit()
+
+    response = make_response('Success: account created')
+    response.status_code = 201
+    return response
+
+#Still working on it.
+#Change User Password
+@app.route('/users/<string:user>', methods=['PUT'])
+@basic_auth.required
+def change_password(user):
+    data = request.get_json(force=True)
+    newpassword = data['password']
+    creator = current_app.config['BASIC_AUTH_USERNAME']
+
+
+    query = 'SELECT * FROM USERS WHERE username = ' + str(user)
+    user = query_db(query)
+    if not user:
+        error = '404 No user exists with the user  of ' + str(user)
+        return make_response(jsonify({'error': error}), 404)
+
+    response = make_response("Success: User password Changed ")
+    response.status_code = 201
+    return response
 
 #List available discussion forums
 @app.route('/forums', methods = ['GET'])
 def api_forums():
-    all_forums = query_db('SELECT forums.Id, forums.forum_name, user.username FROM  forums INNER JOIN user ON forums.Id = user.Id ;')
-    return jsonify(all_forums)
+    query = "SELECT * FROM forums;"
+    forums = query_db(query)
+
+    # all_forums = query_db('SELECT forums.Id, forums.forum_name, user.username FROM  forums INNER JOIN user ON forums.Id = user.Id ;')
+    return jsonify(forums)
 
 #List threads in the specified forum
 @app.route('/forums/<int:forum_id>', methods = ['GET'])
@@ -111,14 +140,123 @@ def api_threads(forum_id):
     if not forum :
         return notify_error(404, 'Error', 'No forum exists with the the forum id of ' + str(forum_id))   
     else:
-        query = 'SELECT threads.Id, threads.thread_title, threads.thread_time, user.username as creator FROM user, threads  where  forum_Id = ' + str(forum_id) +' AND threads.thread_creator = user.Id ORDER BY thread_time DESC;'
+        # query = 'SELECT threads.Id, threads.thread_title, threads.thread_time, user.username as creator FROM user, threads  where  forum_Id = ' + str(forum_id) +' AND threads.thread_creator = user.Id ORDER BY thread_time DESC;'
+        query = 'SELECT * FROM forums WHERE id = ' + str(forum_id)
         threads = query_db(query)
         return jsonify(threads)
         
 #List posts in the specified thread
-# @app.route('/forums/<int:forum_id>/<thread_id>', methods = ['GET'])
-# def api_posts(thread_id):
+@app.route('/forums/<int:forum_id>/<int:thread_id>', methods=['GET'])
+def get_post(forum_id, thread_id):
+    print(forum_id, thread_id)
+     # Select from forums on forum id to make sure that the forum exists
+    query = 'SELECT * FROM forums WHERE id = ' + str(forum_id)
+    forum = query_db(query)
+    if not forum:
+        return notify_error(404, 'Error', 'No forum exists with the the forum id of ' + str(forum_id))   
+    # Select from threads on thread_id to make sure thread exists
+    query = 'SELECT * FROM threads WHERE id = ' + str(thread_id)
+    thread = query_db(query)
+    if not thread:
+        return notify_error(404, 'Error', 'No thread exists with the the thread id of ' + str(thread_id))   
+    query = "SELECT * FROM posts WHERE post_threadId = {} AND post_forumid = {}".format(str(thread_id), str(forum_id))
+    post = query_db(query)
+    return jsonify(post)
+
+#POST FORUM
+@app.route('/forums', methods=['POST'])
+@basic_auth.required
+def post_forums():
+
+    data = request.get_json(force=True)
+    name = data['forum_name']
+
+    creator = current_app.config['BASIC_AUTH_USERNAME']
+    query = 'SELECT forum_name FROM forums'
+    forum_names = query_db(query)
+    for forum_name in forum_names:
+        if forum_name['forum_name'] == name:
+            error = '409 A forum already exists with the name ' + name
+            return make_response(jsonify({'error': error}), 409)
+   
+    db = get_db()
+    db.execute('insert into forums (forum_name, forum_creator) values (?, ?)',(name, creator))
+    db.commit()
+
+    query = "select Id from forums where forum_name ='{}'".format(name)
+    new_forum = query_db(query)
+    response = make_response('Success: forum created')
+    response.headers['location'] = '/forums/{}'.format(new_forum[0]['Id'])
+    response.status_code = 201
+
+    return response
+
+#POST THREAD
+@app.route('/forums/<int:forum_id>', methods=['POST'])
+@basic_auth.required
+def post_thread(forum_id):
+
+    data = request.get_json(force=True)
+    title = data['thread_title']
+    text = data['text']
+    creator = current_app.config['BASIC_AUTH_USERNAME']
+
+     # Select from forums on forum id to make sure that the forum exists
+    query = 'SELECT * FROM forums WHERE id = ' + str(forum_id)
+    forum = query_db(query)
+    print(forum)
+    if len(forum) == 0:
+        error = '404 No forum exists with the forum id of ' + str(forum_id)
+        return make_response(jsonify({'error': error}), 404)
+    # If forum exist, insert into threads table
+    db = get_db()
+    db.execute('insert into threads (thread_title, thread_creator, forum_Id) values (?, ?, ?)',(title, creator, str(forum_id)))
+    db.commit()
+    # Get the thread_id from the new thread to put into post's thread_id
+    file_entry = query_db('SELECT last_insert_rowid()')
+    thread_id = file_entry[0]['last_insert_rowid()']
+    # Insert text as a new post
+    db.execute('insert into posts (post_text, post_authorid , post_threadId, post_forumid) values (?, ?, ?, ?)',(text, creator, str(thread_id), str(forum_id)))
+    db.commit()
+
+    response = make_response("Success: Thread and Post created")
+    response.headers['location'] = '/forums/{}/{}'.format(str(forum_id), thread_id)
+    response.status_code = 201
+    return response
+
+#POST POST
+@app.route('/forums/<int:forum_id>/<int:thread_id>', methods=['POST'])
+@basic_auth.required
+def post_post(forum_id, thread_id):
+    # Select from forums on forum id to make sure that the forum exists
+    query = 'SELECT * FROM forums WHERE id = ' + str(forum_id)
+    forum = query_db(query)
+    print(forum)
+    if len(forum) == 0:
+        error = '404 No forum exists with the forum id of ' + str(forum_id)
+        return make_response(jsonify({'error': error}), 404)
+    # Select from threads on thread_id to make sure thread exists
+    query = 'SELECT * FROM threads WHERE id = ' + str(thread_id)
+    thread = query_db(query)
+    print(thread)
+    if len(thread) == 0:
+        error = '404 No thread exists with the thread id of ' + str(thread_id)
+        return make_response(jsonify({'error': error}), 404)
     
+    data = request.get_json(force=True)
+    creator = current_app.config['BASIC_AUTH_USERNAME']
+    text = data['text']
+
+    # Insert text as a new post
+    db = get_db()
+    db.execute('insert into posts (post_text, post_authorid , post_threadId, post_forumid) values (?, ?, ?, ?)',(text, creator, str(thread_id), str(forum_id)))
+    db.commit()
+
+    response = make_response("Success: Post created")
+    response.headers['location'] = '/forums/{}/{}'.format(str(forum_id), thread_id)
+    response.status_code = 201
+    return response
+
     
 if __name__ == "__main__":
     app.run(debug=True)

@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS forums;
 DROP TABLE IF EXISTS threads;
 DROP TABLE IF EXISTS posts;
 
-CREATE TABLE  IF NOT EXISTS user(
+CREATE TABLE  IF NOT EXISTS users(
 	Id INTEGER PRIMARY KEY ASC, 
 	username TEXT, 
 	password TEXT
@@ -12,9 +12,8 @@ CREATE TABLE  IF NOT EXISTS user(
 CREATE TABLE IF NOT EXISTS forums(
 	Id INTEGER PRIMARY KEY ASC, 
 	forum_name TEXT, 
-	forum_creator INTEGER,
-	forum_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-	FOREIGN KEY (forum_creator) REFERENCES user(Id)
+	forum_creator TEXT,
+	FOREIGN KEY (forum_creator) REFERENCES users(username)
 );
 
 CREATE TABLE IF NOT EXISTS threads(
@@ -24,7 +23,7 @@ CREATE TABLE IF NOT EXISTS threads(
 	thread_time DATETIME DEFAULT CURRENT_TIMESTAMP,
 	forum_Id INTEGER,
 	FOREIGN KEY (forum_Id) REFERENCES forums(Id),
-	FOREIGN KEY (thread_creator) REFERENCES user(Id)
+	FOREIGN KEY (thread_creator) REFERENCES users(Id)
 );
 
 CREATE TABLE IF NOT EXISTS posts(
@@ -34,15 +33,21 @@ CREATE TABLE IF NOT EXISTS posts(
 	post_authorid INTEGER,
 	post_forumid INTEGER,
 	post_threadId INTEGER,
-	FOREIGN KEY (post_authorId) REFERENCES user(Id)
+	FOREIGN KEY (post_authorId) REFERENCES users(Id)
 	FOREIGN KEY (post_forumId) REFERENCES forum(Id)
 	FOREIGN KEY (post_threadId) REFERENCES threads(Id)
 );
 
 
-INSERT INTO USER VALUES (1, "hoangphuc", "love" );
-INSERT INTO FORUMS VALUES (1, "Testing", 1, "2017-09-16 15:33:33.12343" );
-INSERT INTO THREADS VALUES (1,"Whydo?", 1, "2017-09-14 15:33:33.123433",1);
-INSERT INTO USER VALUES (2, "holly", "ha" );
-INSERT INTO FORUMS VALUES (2, "Testing222", 2, "2017-09-16 15:33:33.12343" );
-INSERT INTO THREADS VALUES (2,"Whydo22?", 2, "2017-09-15 15:33:33.123433",1);
+insert into threads (thread_title, thread_creator, forum_id) values ('Does anyone know how to start Redis?', 'bob', 1);
+insert into threads (thread_title, thread_creator, forum_id) values ('Has anyone heard of Edis?', 'charlie', 1);
+
+insert into forums (forum_name, forum_creator) values ('redis', 'alice');
+insert into forums (forum_name, forum_creator) values ('mongodb', 'bob');
+insert into forums (forum_name, forum_creator) values ('python', 'bob');
+insert into forums (forum_name, forum_creator) values ('flask', 'bob');
+
+insert into users (username, password) values ('holly', 'password');
+insert into users (username, password) values ('nguyen', 'password');
+insert into users (username, password) values ('bob', 'password');
+insert into users (username, password) values ('alice', 'password');
