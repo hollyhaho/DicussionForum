@@ -106,23 +106,26 @@ def create_user():
 #Still working on it.
 #Change User Password
 @app.route('/users/<string:user>', methods=['PUT'])
-# @basic_auth.required
+@basic_auth.required
 def change_password(user):
     data = request.get_json(force=True)
     newpassword = data['password']
-    # creator = current_app.config['BASIC_AUTH_USERNAME']
+    creator = current_app.config['BASIC_AUTH_USERNAME']
+    # return creator
+    if(creator is user):
+        query = "SELECT Id FROM USERS WHERE username = '{}'".format(str(user))
+        useracc = query_db(query)
+        if not useracc:
+            error = '404 No user exists with the user of ' + str(user)
+            return make_response(jsonify({'error': error}), 404)
+        db = get_db()
+        db.execute("UPDATE users SET password= ? WHERE username= ?",(newpassword, str(user)))
+        db.commit()
+        response = make_response("Success: User password Changed ")
+        response.status_code = 201
+        return response
 
-    query = "SELECT Id FROM USERS WHERE username = '{}'".format(str(user))
-    useracc = query_db(query)
-    if not useracc:
-        error = '404 No user exists with the user of ' + str(user)
-        return make_response(jsonify({'error': error}), 404)
-    db = get_db()
-    db.execute("UPDATE users SET password= ? WHERE username= ?",(newpassword, str(user)))
-    db.commit()
-    response = make_response("Success: User password Changed ")
-    response.status_code = 201
-    return response
+   
 
 #List available discussion forums
 @app.route('/forums', methods = ['GET'])
