@@ -111,8 +111,9 @@ def change_password(user):
     data = request.get_json(force=True)
     newpassword = data['password']
     creator = current_app.config['BASIC_AUTH_USERNAME']
-    # return creator
-    if(creator is user):
+
+    #Check if the user request is the same with account creator
+    if(creator == str(user)):
         query = "SELECT Id FROM USERS WHERE username = '{}'".format(str(user))
         useracc = query_db(query)
         if not useracc:
@@ -121,9 +122,11 @@ def change_password(user):
         db = get_db()
         db.execute("UPDATE users SET password= ? WHERE username= ?",(newpassword, str(user)))
         db.commit()
-        response = make_response("Success: User password Changed ")
+        response = make_response("Success: User password Changed")
         response.status_code = 201
         return response
+    return notify_error(404, 'Error', 'User Not Authorized')
+    # else: return 'abc'
 
    
 
