@@ -52,9 +52,9 @@ Error: If there are forums with dupl
 Curl call: 
 ```curl -v -u holly:password -d '{"forum_name":"HTML"}' -H "Content-Type: application/json" -X POST localhost:5000/forums```
 
-Response
-Error: 409 for duplicate forum names
-Success: 201 forum created
++ Response
++ Error: 409 for duplicate forum names
++ Success: 201 forum created
 
 ### 3.  GET /forums/<forum_id>
 Curl call: 
@@ -80,12 +80,11 @@ Curl call:
 ```
 ### 4.  POST /forums/<forum_id>
 Curl call: 
-```curl -v -u holly:password -d '{"thread_title":"Love", "text": "I love you"}' -H "Content-Type: application/json" -X POST localhost:5000/forums/1
-```
+```curl -v -u holly:password -d '{"thread_title":"Love", "text": "I love you"}' -H "Content-Type: application/json" -X POST localhost:5000/forums/1```
 
-Successful Response: 201 Created
-Sucess: Thread and Post Created
-Error: 404 Not Found
++ Successful Response: 201 Created
++ Sucess: Thread and Post Created
++ Error: 404 Not Found
 
 ### 5.  GET /forums/<forum_id>/<thread_id>
 Curl call: 
