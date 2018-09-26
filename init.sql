@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS forums;
 DROP TABLE IF EXISTS threads;
 DROP TABLE IF EXISTS posts;
@@ -41,6 +41,9 @@ CREATE TABLE IF NOT EXISTS posts(
 
 insert into threads (thread_title, thread_creator, forum_id) values ('Does anyone know how to start Redis?', 'bob', 1);
 insert into threads (thread_title, thread_creator, forum_id) values ('Has anyone heard of Edis?', 'charlie', 1);
+
+insert into posts (post_text, post_authorid, post_forumid, post_threadId) values ('I am having trouble connecting to Redis. Do you have any idea how to do it?',1, 1, 1);
+insert into posts (post_text, post_authorid, post_forumid, post_threadId) values ('I want to use Edis for a project. Is it a good idea to use it for back end development?',2, 1, 2);
 
 insert into forums (forum_name, forum_creator) values ('redis', 'alice');
 insert into forums (forum_name, forum_creator) values ('mongodb', 'bob');
