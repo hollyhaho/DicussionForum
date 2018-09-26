@@ -19,21 +19,21 @@ CREATE TABLE IF NOT EXISTS forums(
 CREATE TABLE IF NOT EXISTS threads(
 	Id INTEGER PRIMARY KEY ASC,
 	thread_title TEXT NOT NULL,
-	thread_creator INTEGER NOT NULL,
+	thread_creator TEXT,
 	thread_time DATETIME DEFAULT CURRENT_TIMESTAMP,
 	forum_Id INTEGER,
 	FOREIGN KEY (forum_Id) REFERENCES forums(Id),
-	FOREIGN KEY (thread_creator) REFERENCES users(Id)
+	FOREIGN KEY (thread_creator) REFERENCES users(username)
 );
 
 CREATE TABLE IF NOT EXISTS posts(
 	post_Id INTEGER PRIMARY KEY ASC,
 	post_text TEXT NOT NULL,
 	post_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-	post_authorid INTEGER,
-	post_forumid INTEGER,
+	post_authorId INTEGER,
+	post_forumId INTEGER,
 	post_threadId INTEGER,
-	FOREIGN KEY (post_authorId) REFERENCES users(Id)
+	FOREIGN KEY (post_authorId) REFERENCES users(username)
 	FOREIGN KEY (post_forumId) REFERENCES forum(Id)
 	FOREIGN KEY (post_threadId) REFERENCES threads(Id)
 );
@@ -42,8 +42,9 @@ CREATE TABLE IF NOT EXISTS posts(
 insert into threads (thread_title, thread_creator, forum_id) values ('Does anyone know how to start Redis?', 'bob', 1);
 insert into threads (thread_title, thread_creator, forum_id) values ('Has anyone heard of Edis?', 'charlie', 1);
 
-insert into posts (post_text, post_authorid, post_forumid, post_threadId) values ('I am having trouble connecting to Redis. Do you have any idea how to do it?',1, 1, 1);
-insert into posts (post_text, post_authorid, post_forumid, post_threadId) values ('I want to use Edis for a project. Is it a good idea to use it for back end development?',2, 1, 2);
+insert into posts (post_text, post_authorid, post_forumid, post_threadId) values ('I am having trouble connecting to Redis. Do you have any idea how to do it?','bob', 1, 1);
+insert into posts (post_text, post_authorid, post_forumid, post_threadId) values ('I Think you can google it', 'alice', 1, 1);
+insert into posts (post_text, post_authorid, post_forumid, post_threadId) values ('I want to use Edis for a project. Is it a good idea to use it for back end development?','holly', 1, 2);
 
 insert into forums (forum_name, forum_creator) values ('redis', 'alice');
 insert into forums (forum_name, forum_creator) values ('mongodb', 'bob');

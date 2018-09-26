@@ -101,21 +101,24 @@ def change_password(user):
     newpassword = data['password']
     creator = current_app.config['BASIC_AUTH_USERNAME']
 
-    #Check if the user request is the same with account creator
+    #check if username is in database
+    query = "SELECT Id FROM USERS WHERE username = '{}'".format(str(user))
+    useracc = query_db(query)
+    if not useracc:
+       error = '404 No user exists with the user of ' + str(user)
+       return make_response(jsonify({'error': error}), 404)
+
+    #Check if the username is the same with account authenticated
     if(creator == str(user)):
-        query = "SELECT Id FROM USERS WHERE username = '{}'".format(str(user))
-        useracc = query_db(query)
-        if not useracc:
-            error = '404 No user exists with the user of ' + str(user)
-            return make_response(jsonify({'error': error}), 404)
+        
         db = get_db()
         db.execute("UPDATE users SET password= ? WHERE username= ?",(newpassword, str(user)))
         db.commit()
         response = make_response("Success: User password Changed")
         response.status_code = 201
         return response
-    error = '404 Not Authicated ' + str(user)
-    return make_response(jsonify({'error': error}), 404)
+    error = '409 CONFLICT Authenticated Account does not match user ' + str(user)
+    return make_response(jsonify({'error': error}), 409)
    
 #List available discussion forums
 @app.route('/forums', methods = ['GET'])
@@ -136,7 +139,7 @@ def api_threads(forum_id):
         return make_response(jsonify({'error': error}), 404)
     else:
         # query = 'SELECT threads.Id, threads.thread_title, threads.thread_time, user.username as creator FROM user, threads  where  forum_Id = ' + str(forum_id) +' AND threads.thread_creator = user.Id ORDER BY thread_time DESC;'
-        query = 'SELECT * FROM threads WHERE forum_id = ' + str(forum_id) + ' ORDER BY thread_time DESC'
+        query = 'SELECT Id, thread_creator as creator, thread_time as timestamp, thread_title as title FROM threads WHERE forum_id = ' + str(forum_id) + ' ORDER BY thread_time DESC'
         threads = query_db(query)
         return jsonify(threads)
         
@@ -156,7 +159,7 @@ def get_post(forum_id, thread_id):
     if not thread:
         error = '404 No thread exists with the thread id of ' + str(thread_id)
         return make_response(jsonify({'error': error}), 404)
-    query = "SELECT * FROM posts WHERE post_threadId = {} AND post_forumid = {}".format(str(thread_id), str(forum_id))
+    query = "SELECT post_authorId as author, post_text as text, post_time as timestamp FROM posts WHERE post_threadId = {} AND post_forumid = {}".format(str(thread_id), str(forum_id))
     post = query_db(query)
     return jsonify(post)
 
