@@ -66,20 +66,20 @@ Curl call:
 	  {
 	    "Id": 1,
 	    "creator": "bob",
-	    "timestamp": "2018-09-26 07:57:47",
+   	    "timestamp": "Wed, 26 Sept 2018 16:58:23 GMT",
 	    "title": "Does anyone know how to start Redis ?"
 	  },
 	  {
 	    "Id": 2,
 	    "creator": "charlie",  
-	    "timestamp": "2018-09-26 07:57:47",
+    	    "timestamp": "Wed, 26 Sept 2018 16:58:23 GMT",
 	    "title": "Has anyone heard of Edis?"
 	  }
 ]
 ```
 ### 4.  POST /forums/<forum_id>
 Curl call: 
-```curl -v -u holly:password -d '{"thread_title":"Love", "text": "I love you"}' -H "Content-Type: application/json" -X POST localhost:5000/forums/1```
+```curl -v -u holly:password -d '{"thread_title":"Do you love Redis?", "text": "I love it very much"}' -H "Content-Type: application/json" -X POST localhost:5000/forums/1```
 
 + Successful Response: 201 Created
 + Sucess: Thread and Post Created
@@ -95,18 +95,13 @@ Curl call:
 	{
 	    "author": "bob",
 	    "text": "I am having trouble connecting to Redis. Do you have any idea how to do it?",
-	    "timestamp": "2018-09-26 07:57:47"
-	  },
-	  {
+	    "timestamp": "Wed, 26 Sept 2018 16:58:23 GMT"  
+	},
+	{
 	    "author": "alice",
 	    "text": "I Think you can google it",
-	    "timestamp": "2018-09-26 07:57:47"
-	  },
-	  {
-	    "author": "holly",
-	    "text": "You can go stackoverflow and post your question",
-	    "timestamp": "2018-09-26 08:05:30"
-	  }
+	    "timestamp": "Wed, 26 Sept 2018 16:58:23 GMT"  
+	}
 ```
 ### 6. POST /forums/<forum_id>/<thread_id>
 Curl call: 
