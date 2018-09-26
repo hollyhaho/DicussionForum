@@ -64,12 +64,14 @@ Curl call:
 ```
 [
 	{   "Id": 1,
-	    "forum_Id": 1,    "thread_creator": "bob",
+	    "forum_Id": 1,  
+	    "thread_creator": "bob",
 	    "thread_time": "2018-09-26 04:27:21",
 	    "thread_title": "Does anyone know how to start Redis?"  
 	},
 	{
-	    "Id": 2,    "forum_Id": 1,
+	    "Id": 2,    
+	    "forum_Id": 1,
 	    "thread_creator": "charlie",
 	    "thread_time": "2018-09-26 04:27:21",    
 	    "thread_title": "Has anyone heard of Edis?"
@@ -104,12 +106,11 @@ Curl call:
 ```
 ### 6. POST /forums/<forum_id>/<thread_id>
 Curl call: 
-```curl -v -u holly:password -d '{"thread_title":"Love", "text": "I love you"}' -H "Content-Type: application/json" -X POST localhost:5000/forums/1
-```
+```curl -v -u holly:password -d '{"thread_title":"Love", "text": "I love you"}' -H "Content-Type: application/json" -X POST localhost:5000/forums/1```
 
-Successful Response: 201 Created
-Sucess: Thread and Post Created
-Error: 404 Not Found
++ Successful Response: 201 Created
++ Sucess: Thread and Post Created
++ Error: 404 Not Found
 
 ### 7. POST /users
 
