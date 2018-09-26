@@ -148,7 +148,7 @@ def api_threads(forum_id):
         return notify_error(404, 'Error', 'No forum exists with the the forum id of ' + str(forum_id))   
     else:
         # query = 'SELECT threads.Id, threads.thread_title, threads.thread_time, user.username as creator FROM user, threads  where  forum_Id = ' + str(forum_id) +' AND threads.thread_creator = user.Id ORDER BY thread_time DESC;'
-        query = 'SELECT * FROM forums WHERE id = ' + str(forum_id)
+        query = 'SELECT * FROM threads WHERE forum_id = ' + str(forum_id) + ' ORDER BY thread_time DESC'
         threads = query_db(query)
         return jsonify(threads)
         
