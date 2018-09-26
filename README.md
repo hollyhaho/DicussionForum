@@ -50,14 +50,18 @@ Response: Success 200 OK
 
 ### 2. POST /forums
 Curl call: 
-```curl -v -u holly:password -d '{"forum_name":"HTML"}' -H "Content-Type: application/json" -X POST localhost:5000/forums```
+```
+curl -v -u holly:password -d '{"forum_name":"HTML"}' -H "Content-Type: application/json" -X POST localhost:5000/forums
+```
 
 + Error: 409 for duplicate forum names
 + Success: 201 forum created
 
 ### 3.  GET /forums/<forum_id>
 Curl call: 
-```curl localhost:5000/forums/1```
+```
+curl localhost:5000/forums/1
+```
 + Response: Success 200 OK
 + Curl call: 
 ```
@@ -78,7 +82,9 @@ Curl call:
 ```
 ### 4.  POST /forums/<forum_id>
 Curl call: 
-```curl -v -u holly:password -d '{"thread_title":"Do you love Redis?", "text": "I love it very much"}' -H "Content-Type: application/json" -X POST localhost:5000/forums/1```
+```
+curl -v -u holly:password -d '{"thread_title":"Do you love Redis?", "text": "I love it very much"}' -H "Content-Type: application/json" -X POST localhost:5000/forums/1
+```
 
 + Successful Response: 201 Created
 + Sucess: Thread and Post Created
@@ -86,7 +92,9 @@ Curl call:
 
 ### 5.  GET /forums/<forum_id>/<thread_id>
 Curl call: 
-```curl localhost:5000/forums/1/1```
+```
+curl localhost:5000/forums/1/1
+```
 + Response: Success 200 OK
 + Curl call: 
 ```
@@ -101,10 +109,13 @@ Curl call:
 	    "text": "I Think you can google it",
 	    "timestamp": "Wed, 26 Sept 2018 16:58:23 GMT"  
 	}
+]
 ```
 ### 6. POST /forums/<forum_id>/<thread_id>
 Curl call: 
-```curl -v -u holly:password -d '{"text":"You can go stackoverflow and post your question"}' -H "Content-Type: application/json" -X POST localhost:5000/forums/1/1```
+```
+curl -v -u holly:password -d '{"text":"You can go stackoverflow and post your question"}' -H "Content-Type: application/json" -X POST localhost:5000/forums/1/1
+```
 
 + Successful Response: 201 Created
 + Sucess: Post Created
@@ -112,7 +123,9 @@ Curl call:
 
 ### 7.  POST /users
 Curl call: 
-```curl -v -d '{"username": "dungho", "password": "whatisthat"}' -H "Content-Type: application/json" -X POST localhost:5000/users```
+```
+curl -v -d '{"username": "dungho", "password": "whatisthat"}' -H "Content-Type: application/json" -X POST localhost:5000/users
+```
 
 + Successful Response: 201 Created
 + Sucess: Account Created
@@ -120,7 +133,9 @@ Curl call:
 
 ### 8. PUT /users/<username>
 Curl call: 
-```curl -v -u holly:password -d '{"password":"newpassword"}' -H "Content-Type: application/json" -X PUT localhost:5000/users/holly```
+```
+curl -v -u holly:password -d '{"password":"newpassword"}' -H "Content-Type: application/json" -X PUT localhost:5000/users/holly
+```
 
 + Successful Response: 201 Created
 + Sucess: User password Changed
