@@ -59,9 +59,8 @@ Success: 201 forum created
 ### 3.  GET /forums/<forum_id>
 Curl call: 
 ```curl localhost:5000/forums/1```
-Response: Success 200 OK
-```
-Curl call: 
++ Response: Success 200 OK
++ Curl call: 
 ```
 [
 	{   "Id": 1,
@@ -89,9 +88,8 @@ Error: 404 Not Found
 ### 5.  GET /forums/<forum_id>/<thread_id>
 Curl call: 
 ```curl localhost:5000/forums/1/1```
-Response: Success 200 OK
-```
-Curl call: 
++ Response: Success 200 OK
++ Curl call: 
 ```
 [
 	{
