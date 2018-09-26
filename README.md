@@ -63,19 +63,18 @@ Curl call:
 + Curl call: 
 ```
 [
-	{   "Id": 1,
-	    "forum_Id": 1,  
-	    "thread_creator": "bob",
-	    "thread_time": "2018-09-26 04:27:21",
-	    "thread_title": "Does anyone know how to start Redis?"  
-	},
-	{
-	    "Id": 2,    
-	    "forum_Id": 1,
-	    "thread_creator": "charlie",
-	    "thread_time": "2018-09-26 04:27:21",    
-	    "thread_title": "Has anyone heard of Edis?"
-	}
+	  {
+	    "Id": 1,
+	    "creator": "bob",
+	    "timestamp": "2018-09-26 07:57:47",
+	    "title": "Does anyone know how to start Redis ?"
+	  },
+	  {
+	    "Id": 2,
+	    "creator": "charlie",  
+	    "timestamp": "2018-09-26 07:57:47",
+	    "title": "Has anyone heard of Edis?"
+	  }
 ]
 ```
 ### 4.  POST /forums/<forum_id>
@@ -94,24 +93,43 @@ Curl call:
 ```
 [
 	{
-	    "post_Id": 1,   
-	    "post_authorid": 1,
-	    "post_forumid": 1,
-	    "post_text": "I am having trouble connectingto Redis. Do you have any idea how to do it?",
-	    "post_threadId": 1,
-	    "post_time": "2018-09-26 04:27:21"
+	    "author": "bob",
+	    "text": "I am having trouble connecting to Redis. Do you have any idea how to do it?",
+	    "timestamp": "2018-09-26 07:57:47"
+	  },
+	  {
+	    "author": "alice",
+	    "text": "I Think you can google it",
+	    "timestamp": "2018-09-26 07:57:47"
+	  },
+	  {
+	    "author": "holly",
+	    "text": "You can go stackoverflow and post your question",
+	    "timestamp": "2018-09-26 08:05:30"
 	  }
-]
 ```
 ### 6. POST /forums/<forum_id>/<thread_id>
 Curl call: 
-```curl -v -u holly:password -d '{"thread_title":"Love", "text": "I love you"}' -H "Content-Type: application/json" -X POST localhost:5000/forums/1```
+```curl -v -u holly:password -d '{"text":"You can go stackoverflow and post your question"}' -H "Content-Type: application/json" -X POST localhost:5000/forums/1/1```
 
 + Successful Response: 201 Created
-+ Sucess: Thread and Post Created
++ Sucess: Post Created
 + Error: 404 Not Found
 
-### 7. POST /users
+### 7.  POST /users
+Curl call: 
+```curl -v -d '{"username": "dungho", "password": "whatisthat"}' -H "Content-Type: application/json" -X POST localhost:5000/users```
+
++ Successful Response: 201 Created
++ Sucess: Account Created
++ Error: 404 Not Found
 
 ### 8. PUT /users/<username>
+Curl call: 
+```curl -v -u holly:password -d '{"password":"newpassword"}' -H "Content-Type: application/json" -X PUT localhost:5000/users/holly
+```
 
++ Successful Response: 201 Created
++ Sucess: User password Changed
++ Error: 404 Not Found Username does not exist.
++ Error 2: 409 Conflict Username does not match the current authenticated user
