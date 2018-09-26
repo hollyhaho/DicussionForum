@@ -126,8 +126,7 @@ Curl call:
 
 ### 8. PUT /users/<username>
 Curl call: 
-```curl -v -u holly:password -d '{"password":"newpassword"}' -H "Content-Type: application/json" -X PUT localhost:5000/users/holly
-```
+```curl -v -u holly:password -d '{"password":"newpassword"}' -H "Content-Type: application/json" -X PUT localhost:5000/users/holly```
 
 + Successful Response: 201 Created
 + Sucess: User password Changed
