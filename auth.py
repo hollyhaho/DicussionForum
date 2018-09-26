@@ -70,16 +70,6 @@ def query_db(query, args=(), one=False):
     cur = conn. cursor()
     fetch = cur.execute(query).fetchall()
     return fetch
-    
-    
-#Notify error with status code, response and reason
-def notify_error(status_code, response, reason):
-    notify = jsonify({
-    "status" : status_code,
-    "response": response,
-    "reason": reason
-    })
-    return notify
           
 #Create User
 @app.route('/users', methods=['POST'])
@@ -88,13 +78,12 @@ def create_user():
     username = data['username']
     password = data['password']
 
-
     query = 'SELECT username FROM users'
     listusername = query_db(query)
     for user_name in listusername:
         if user_name['username'] == username:
-            return notify_error(409, 'Conflict', 'Username already exists')
-
+            error = '409 A username already exists'
+            return make_response(jsonify({'error': error}), 409)
     db = get_db()
     db.execute('insert into users(username, password) values (?,?)', (username,password))
     db.commit()
@@ -125,11 +114,9 @@ def change_password(user):
         response = make_response("Success: User password Changed")
         response.status_code = 201
         return response
-    return notify_error(404, 'Error', 'User Not Authorized')
-    # else: return 'abc'
-
+    error = '404 Not Authicated ' + str(user)
+    return make_response(jsonify({'error': error}), 404)
    
-
 #List available discussion forums
 @app.route('/forums', methods = ['GET'])
 def api_forums():
@@ -145,7 +132,8 @@ def api_threads(forum_id):
     query = 'SELECT Id FROM forums WHERE Id = ' + str(forum_id) +';'
     forum = query_db(query)
     if not forum :
-        return notify_error(404, 'Error', 'No forum exists with the the forum id of ' + str(forum_id))   
+        error = '404 No forum exists with the forum id of ' + str(forum_id)
+        return make_response(jsonify({'error': error}), 404)
     else:
         # query = 'SELECT threads.Id, threads.thread_title, threads.thread_time, user.username as creator FROM user, threads  where  forum_Id = ' + str(forum_id) +' AND threads.thread_creator = user.Id ORDER BY thread_time DESC;'
         query = 'SELECT * FROM threads WHERE forum_id = ' + str(forum_id) + ' ORDER BY thread_time DESC'
@@ -160,12 +148,14 @@ def get_post(forum_id, thread_id):
     query = 'SELECT * FROM forums WHERE id = ' + str(forum_id)
     forum = query_db(query)
     if not forum:
-        return notify_error(404, 'Error', 'No forum exists with the the forum id of ' + str(forum_id))   
+        error = '404 No forum exists with the forum id of ' + str(forum_id)
+        return make_response(jsonify({'error': error}), 404)
     # Select from threads on thread_id to make sure thread exists
     query = 'SELECT * FROM threads WHERE id = ' + str(thread_id)
     thread = query_db(query)
     if not thread:
-        return notify_error(404, 'Error', 'No thread exists with the the thread id of ' + str(thread_id))   
+        error = '404 No thread exists with the thread id of ' + str(thread_id)
+        return make_response(jsonify({'error': error}), 404)
     query = "SELECT * FROM posts WHERE post_threadId = {} AND post_forumid = {}".format(str(thread_id), str(forum_id))
     post = query_db(query)
     return jsonify(post)
