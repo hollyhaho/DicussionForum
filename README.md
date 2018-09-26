@@ -46,13 +46,12 @@ Response: Success 200 OK
 		"forum_name": "flask"
 	}
 ]
-Error: If there are forums with dupl
 ```
+
 ### 2. POST /forums
 Curl call: 
 ```curl -v -u holly:password -d '{"forum_name":"HTML"}' -H "Content-Type: application/json" -X POST localhost:5000/forums```
 
-+ Response
 + Error: 409 for duplicate forum names
 + Success: 201 forum created
 
